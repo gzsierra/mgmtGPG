@@ -46,14 +46,16 @@ func main()  {
 
   fmt.Println(ent.PrimaryKey, " \n ", ent.PrivateKey)
 
-  crypt(ent)
+  encStr := crypt(ent)
+
+  decrypt(ent, encStr)
 
   // time.Sleep(20)
   // decrypt()
 
 }
 
-func crypt(ent *openpgp.Entity)  {
+func crypt(ent *openpgp.Entity)  (string){
   ents := []*openpgp.Entity{ent}
   fmt.Println("Crypting the test file")
 
@@ -80,8 +82,32 @@ func crypt(ent *openpgp.Entity)  {
       fmt.Println(err)
   }
   encStr := base64.StdEncoding.EncodeToString(bytes)
-
   // Output encrypted/encoded string
   fmt.Println("Encrypted Secret:", encStr)
 
+  return encStr
+}
+
+func decrypt(ent *openpgp.Entity, encString string)  {
+
+  // ents := []*openpgp.Entity{ent}
+  entityList := openpgp.EntityList{ent}
+  fmt.Println("Decrypting the test file")
+
+  // Decode the base64 string
+  dec, err := base64.StdEncoding.DecodeString(encString)
+  if err != nil {
+    fmt.Println(err)
+  }
+
+  // Decrypt it with the contents of the private key
+  md, err := openpgp.ReadMessage(bytes.NewBuffer(dec), entityList, nil, nil)
+  if err != nil {
+      fmt.Println(err)
+  }
+  bytes, err := ioutil.ReadAll(md.UnverifiedBody)
+  if err != nil {
+      fmt.Println(err)
+  }
+  fmt.Println(string(bytes))
 }
