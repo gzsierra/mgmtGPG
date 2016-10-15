@@ -2,57 +2,32 @@ package main
 
 import (
   "fmt"
-  // "time"
-  // "os"
   "bytes"
   "encoding/base64"
   "io/ioutil"
 
+  "crypto"
   "golang.org/x/crypto/openpgp"
   "golang.org/x/crypto/openpgp/packet"
-  _ "golang.org/x/crypto/ripemd160" // XXX
-  _ "crypto/sha256"
-  // "golang.org/x/crypto/openpgp/armor"
-
-  // "crypto/ecdsa"
 )
-
-type gpg struct{
-  pub packet.PublicKey
-  priv packet.PrivateKey
-
-  entity openpgp.Entity
-}
 
 func main()  {
 
   fmt.Println("TESTING GPG")
 
-
   var ent *openpgp.Entity
-  var config *packet.Config
+  var config packet.Config
+  config.DefaultHash = crypto.SHA256
 
-  config.Cipher()
-  config.Compression()
-  // config.DefaultHash =
-  config.Hash()
-  config.Now()
-
-  ent, err := openpgp.NewEntity("itis", "test", "itis@itis3.com", config)
+  ent, err := openpgp.NewEntity("itis", "test", "itis@itis3.com", &config)
   if err != nil {
           fmt.Println(err)
           return
   }
 
   fmt.Println(ent.PrimaryKey, " \n ", ent.PrivateKey)
-
   encStr := crypt(ent)
-
   decrypt(ent, encStr)
-
-  // time.Sleep(20)
-  // decrypt()
-
 }
 
 func crypt(ent *openpgp.Entity)  (string){
@@ -89,8 +64,6 @@ func crypt(ent *openpgp.Entity)  (string){
 }
 
 func decrypt(ent *openpgp.Entity, encString string)  {
-
-  // ents := []*openpgp.Entity{ent}
   entityList := openpgp.EntityList{ent}
   fmt.Println("Decrypting the test file")
 
